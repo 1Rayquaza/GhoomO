@@ -48,6 +48,27 @@ const App = () => {
     })
     setMap(map)
 
+    const drawRoute = (geoJson, map) => {
+      if (map.getLayer('route')) {
+        map.removeLayer('route')
+        map.removeSource('route')
+      }
+      map.addLayer({
+        id: 'route',
+        type: 'line',
+        source: {
+          type: 'geojson',
+          data: geoJson
+        },
+        paint: {
+          'line-color': '#000000',
+          'line-width': 6
+    
+        }
+      })
+    }
+
+
     const sortDestinations = (locations) => {
       const pointsForDestinations = locations.map((destination) => {
         return convertToPoints(destination);
