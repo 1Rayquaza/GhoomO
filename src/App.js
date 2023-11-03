@@ -96,6 +96,33 @@ const App = () => {
     return () => map.remove()
   }, [longitude, latitude])
 
+import './App.css'
+import '@tomtom-international/web-sdk-maps/dist/maps.css'
+
+function App() {
+  const mapElement = useRef()
+  const [map, setMap] = useState({})
+
+  useEffect(() => {
+    const origin = {
+      lng: 77.2090, // New Delhi's longitude
+      lat: 28.6139, // New Delhi's latitude
+    }
+    const destinations = []
+
+    let map = tt.map({
+      key: process.env.REACT_APP_TOM_TOM_API_KEY,
+      container: mapElement.current,
+      stylesVisibility: {
+        trafficIncidents: true,
+        trafficFlow: true,
+      },
+      center: [origin.lng, origin.lat],
+      zoom: 14,
+    })
+    setMap(map)
+  }, []) // The empty dependency array means this effect will run once, similar to componentDidMount.
+
   return (
     <>
       {map && (
@@ -111,6 +138,7 @@ const App = () => {
               onChange={(e) => {
                 setLongitude(e.target.value)
               }}
+              placeholder="Longitude"
             />
             <input
               type="text"
@@ -129,6 +157,8 @@ const App = () => {
               onChange={(e) => {
                 setLatitude(e.target.value)
               }}
+
+              placeholder="Latitude"
             />
           </div>
         </div>
