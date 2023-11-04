@@ -4,14 +4,12 @@ import * as ttapi from '@tomtom-international/web-sdk-services'
 import './App.css'
 import '@tomtom-international/web-sdk-maps/dist/maps.css'
 
-const App = () => {
+const App = () => { 
   const mapElement = useRef()
   const [map, setMap] = useState({})
   const [longitude, setLongitude] = useState(81.76763134699489)//25.430746806545788, 81.76763134699489
   const [latitude, setLatitude] = useState(25.430746806545788)
   const [maximumTravelTime, setMaximumTravelTime] = useState(10000)
-  const [excludePlaces, setExcludePlaces] = useState([]);
-  const [globalDestinations, setGlobalDestinations] = useState([]);
 
   const convertToPoints = (lngLat) => {
     return {
@@ -37,7 +35,7 @@ const App = () => {
       paint: {
         'line-color': '#000000',
         'line-width': 6
-
+  
       }
     })
   }
@@ -48,20 +46,9 @@ const App = () => {
     new tt.Marker({
       element: element
     })
-      .setLngLat(lngLat)
-      .addTo(map)
+    .setLngLat(lngLat)
+    .addTo(map)
   }
-
-  // Function to handle the selection from the dropdown
-  const handleExcludePlacesChange = (e) => {
-    const selectedPlace = e.target.value;
-    if (selectedPlace) {
-      if (!excludePlaces.includes(selectedPlace)) {
-        setExcludePlaces((prevExcludePlaces) => [...prevExcludePlaces, selectedPlace]);
-      }
-    }
-  };
-
 
   useEffect(() => {
     const origin = {
@@ -75,15 +62,16 @@ const App = () => {
       // addDeliveryMarker({ lat: 25.473034, lng: 81.878357 }, map);
       destinations.push({ lat: 25.427828490262055, lng: 81.77325935100428 });//25.427828490262055, 81.77325935100428
       addDeliveryMarker({ lat: 25.427828490262055, lng: 81.77325935100428 }, map);
-      destinations.push({ lat: 25.44492439818056, lng: 81.82023375153176 });//25.44492439818056, 81.82023375153176
-      addDeliveryMarker({ lat: 25.44492439818056, lng: 81.82023375153176 }, map);
+      destinations.push({ lat: 25.44492439818056, lng: 81.82023375153176});//25.44492439818056, 81.82023375153176
+      addDeliveryMarker({ lat: 25.44492439818056, lng: 81.82023375153176}, map);
       destinations.push({ lat: 25.446146398427192, lng: 81.81649870989105 });//25.446146398427192, 81.81649870989105
       addDeliveryMarker({ lat: 25.446146398427192, lng: 81.81649870989105 }, map);
       destinations.push({ lat: 25.452380520210294, lng: 81.8221143278102 });//25.452380520210294, 81.8221143278102
-      addDeliveryMarker({ lat: 25.452380520210294, lng: 81.8221143278102 }, map);
-      recalculateRoutesNew();
+      addDeliveryMarker({ lat:  25.452380520210294, lng: 81.8221143278102 }, map);
+      recalculateRoutes();
     }
-    setGlobalDestinations(destinations);
+    
+  
 
     let map = tt.map({
       key: process.env.REACT_APP_TOM_TOM_API_KEY,
@@ -92,7 +80,7 @@ const App = () => {
         trafficIncidents: true,
         trafficFlow: true,
       },
-      center: [longitude, latitude],
+      center:[longitude, latitude],
       zoom: 14,
     })
     setMap(map)
@@ -113,7 +101,7 @@ const App = () => {
         .addTo(map)
 
 
-
+      
       marker.on('dragend', () => {
         const lngLat = marker.getLngLat()
         setLongitude(lngLat.lng)
@@ -121,128 +109,93 @@ const App = () => {
       })
 
       marker.setPopup(popup).togglePopup()
-
+      
     }
     addMarker()
-
-    const findShortestRoute = (matrix, maxTravelTime) => {
-      const n = matrix.length;
-      const visited = new Array(n).fill(false);
-      const route = [0]; // Start from the 0th index (origin)
-      let totalTravelTime = 0;
-
-      while (route.length < n) {
-        let minTime = Infinity;
-        let nextDestination = -1;
-
-        for (let i = 1; i < n; i++) {
-          if (!visited[i] && !excludePlaces.includes(i) && matrix[route[route.length - 1]][i] < minTime) {
-            minTime = matrix[route[route.length - 1]][i];
-            nextDestination = i;
-          }
-        }
-        if (nextDestination === -1 || totalTravelTime + minTime > maxTravelTime) {
-          route.push(0);
-          if (route.length > 0) {
-            totalTravelTime += matrix[route[route.length - 1]][0];
-          }
-          break; // No valid destination found or exceeds maxTravelTime
-        }
-        if (totalTravelTime + matrix[nextDestination][0] <= maxTravelTime) {
-          route.push(nextDestination);
-          totalTravelTime += minTime;
-        }
-        visited[nextDestination] = true;
-      }
-      return route;
-    };
-
-    const getLocationTimes = async (currentOrigin, locations) => {
+    
+    const sortDestinations = (locations) => {
       const pointsForDestinations = locations.map((destination) => {
         return convertToPoints(destination);
       });
       const callParameters = {
         key: process.env.REACT_APP_TOM_TOM_API_KEY,
         destinations: pointsForDestinations,
-        origins: [convertToPoints(currentOrigin)],
+        origins: [convertToPoints(origin)],
       };
-
-      try {
-        const matrixAPIResults = await ttapi.services.matrixRouting(callParameters);
-        const results = matrixAPIResults.matrix[0];
-        const locationTimes = results.map((result) => result.response.routeSummary.travelTimeInSeconds);
-        return locationTimes;
-      } catch (error) {
-        throw new Error('Failed to fetch location times: ' + error.message);
-      }
-    };
-
-    const recalculateRoutesNew = async () => {
-      const newDestination = destinations.slice(); // Copy the destinations array
-      newDestination.unshift(origin);
-
-      const matrix = [];
-
-      for (let i = 0; i < newDestination.length; i++) {
-        matrix[i] = []; // Initialize the row for the current destination
-        // Calculate the travel time between the i-th and j-th destinations
-        const locationTimes = await getLocationTimes(newDestination[i], newDestination);
-        matrix[i] = locationTimes;
-        console.log(matrix[i]);
-      }
-      console.log(matrix);
-
-      const maxTravelTime = maximumTravelTime;
-
-      const validDestinations = findShortestRoute(matrix, maxTravelTime);
-      console.log("valid destinations = ", validDestinations);
-
-      if (validDestinations.length === 0) {
-        // Display a popup or show an alert for an empty validDestinations array
-        // For example, using an alert:
-        alert('No valid destinations within the specified maximum travel time.');
-      } else {
-        // Convert coordinates to objects with latitude and longitude properties
-        const newValidDestinations = validDestinations.map((index) => {
-          return {
-            latitude: newDestination[index].lat,
-            longitude: newDestination[index].lng,
-          };
-        });
-
-        // Add the origin to the beginning
-        newValidDestinations.unshift({
-          latitude: origin.lat,
-          longitude: origin.lng,
-        });
-
-        // Add the origin to the end
-        newValidDestinations.push({
-          latitude: origin.lat,
-          longitude: origin.lng,
-        });
-
-        console.log("old destinations = ", newDestination);
-        console.log("new Valid Destinations = ", newValidDestinations);
-
+    
+      return new Promise((resolve, reject) => {
         ttapi.services
-          .calculateRoute({
-            key: process.env.REACT_APP_TOM_TOM_API_KEY,
-            locations: newValidDestinations, // Pass the converted destinations
-          })
-          .then((routeData) => {
-            const geoJson = routeData.toGeoJson();
-            drawRoute(geoJson, map);
+          .matrixRouting(callParameters)
+          .then((matrixAPIResults) => {
+            const results = matrixAPIResults.matrix[0];
+            const sortedLocations = locations.map((location, index) => {
+              return {
+                ...location,
+                drivingTime: results[index].response.routeSummary.travelTimeInSeconds,
+              };
+            });
+            sortedLocations.sort((a, b) => {
+              return a.drivingTime - b.drivingTime;
+            });
+            resolve(sortedLocations);
           });
-      }
+      });
     };
+    
+    
+    const recalculateRoutes = () => {
+      sortDestinations(destinations).then((sorted) => {
+        sorted.unshift(origin);
+    
+        // const maxTravelTime = 20 * 60 * 60; // 2 hours in seconds
+        // const maxTravelTime = 1966; 
+        const maxTravelTime = maximumTravelTime; 
+        const validDestinations = [];
+        let totalTravelTime = 0;
+        console.log('sorted = ',sorted);
+        for (let i = 1; i < sorted.length; i++) {
+          const destination = sorted[i];
+          console.log('destination s driving time = ',destination.drivingTime);
+          console.log('total travelling time = ',totalTravelTime);
+          console.log('maxTravelTime = ',maxTravelTime);
+          // Assuming `destination.travelTime` is the travel time in seconds
+          if (totalTravelTime + destination.drivingTime <= maxTravelTime) {
+            validDestinations.push(destination);
+            totalTravelTime += destination.drivingTime;
+          } else {
+            // If adding this destination exceeds the time limit, break the loop
+            break;
+          }
+        }
+
+         console.log('Valid destinations array:', validDestinations);
+         if (validDestinations.length === 0) {
+          // Display a popup or show an alert for an empty validDestinations array
+          // For example, using an alert:
+          alert('No valid destinations within the specified maximum travel time.');
+        } else {
+          ttapi.services
+            .calculateRoute({
+              key: process.env.REACT_APP_TOM_TOM_API_KEY,
+              locations: [origin, ...validDestinations],
+            })
+            .then((routeData) => {
+              const geoJson = routeData.toGeoJson();
+              drawRoute(geoJson, map);
+            });
+        }
+        
+      });
+    };
+    
 
     addCircuit();
-
+   
     map.on('click', (e) => {
+      
       destinations.push(e.lngLat)
       addDeliveryMarker(e.lngLat, map)
-      recalculateRoutesNew()
+      recalculateRoutes()
     })
 
     return () => map.remove()
@@ -254,33 +207,34 @@ const App = () => {
         <div className="app">
           <div ref={mapElement} className="map" />
           <div className="search-bar">
+            <h1>Where to?</h1>
+            <input
+              type="text"
+              id="longitude"
+              className="longitude"
+              placeholder="destination longitude"
+              onChange={(e) => {
+                setLongitude(e.target.value)
+              }}
+            />
+            <input
+              type="text"
+              id="latitude"
+              className="latitude"
+              placeholder="destination latitude"
+              onChange={(e) => {
+                setLongitude(e.target.value)
+              }}
+            />
             <input
               type="text"
               id="time"
               className="time"
-              placeholder="Available Time"
+              placeholder="Samay kitna hai"
               onChange={(e) => {
                 setMaximumTravelTime(e.target.value)
               }}
             />
-
-            <select id="excludePlaces" onChange={handleExcludePlacesChange}>
-              <option value="">Select a place to exclude</option>
-              {globalDestinations.map((place, index) => (
-                <option key={index} value={index + 1}>
-                  {index + 1}
-                </option>
-              ))}
-            </select>
-            {/* Display the excluded places */}
-            <div className="excluded-places">
-              <p>Excluded Places:</p>
-              <ul>
-                {excludePlaces.map((place, index) => (
-                  <li key={index}>{place}</li>
-                ))}
-              </ul>
-            </div>
           </div>
         </div>
       )}
