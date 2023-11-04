@@ -12,6 +12,7 @@ const App = () => {
   const [maximumTravelTime, setMaximumTravelTime] = useState(10000)
   const [excludePlaces, setExcludePlaces] = useState([]);
   const [globalDestinations, setGlobalDestinations] = useState([]);
+  const [loader, setLoader] = useState(true);
 
   const convertToPoints = (lngLat) => {
     return {
@@ -37,7 +38,6 @@ const App = () => {
       paint: {
         'line-color': '#000000',
         'line-width': 6
-
       }
     })
   }
@@ -57,20 +57,11 @@ const App = () => {
     const selectedPlace = e.target.value;
     if (selectedPlace) {
       const numericPlace = parseInt(selectedPlace, 10); // Parse the selectedPlace as an integer
-      if (excludePlaces.includes(numericPlace)) {
-        // If the place is already in the list, remove it
-        setExcludePlaces((prevExcludePlaces) => prevExcludePlaces.filter((place) => place !== numericPlace));
-      } else {
-        // If the place is not in the list, add it
+      if (!excludePlaces.includes(numericPlace)) {
         setExcludePlaces((prevExcludePlaces) => [...prevExcludePlaces, numericPlace]);
       }
     }
-    const sp = document.getElementById('excludePlaces')
-    sp.value = '';
   };
-  
-
-
 
 
   useEffect(() => {
@@ -246,12 +237,13 @@ const App = () => {
           .then((routeData) => {
             const geoJson = routeData.toGeoJson();
             drawRoute(geoJson, map);
+            setLoader(false);
           })
           .catch((error) => {
             // Handle the error here, e.g., show an alert or log the error message
             console.error('Error calculating route:', error);
+            setLoader(false);
           });
-
       }
     };
 
@@ -270,32 +262,27 @@ const App = () => {
 
     handleSettingsChange();
     return () => map.remove()
-  }, [maximumTravelTime, excludePlaces])
+  }, [longitude, latitude, maximumTravelTime, excludePlaces])
 
   return (
     <>
       {map && (
         <div className="app">
+          {loader && 
+            <div className='loader'>
+              <img src="https://i.gifer.com/ZKZg.gif" alt="Loading..." width="50" height="50"></img>
+            </div>}
           <div ref={mapElement} className="map" />
           <div className="search-bar">
-            <input
+          <input
               type="text"
               id="time"
-              className="time"
+              className="time buttons"
               placeholder="Available Time"
             />
 
-            <button
-              onClick={() => {
-                // Call setMaximumTravelTime when the button is clicked
-                const field = document.getElementById('time');
-                setMaximumTravelTime(field.value);
-              }}
-            >
-              Set Maximum Travel Time
-            </button>
 
-            <select id="excludePlaces" onChange={handleExcludePlacesChange}>
+            <select className="buttons" id="excludePlaces" onChange={handleExcludePlacesChange}>
               <option value="">Select a place to exclude</option>
               {globalDestinations.map((place, index) => (
                 <option key={index} value={index + 1}>
@@ -303,6 +290,17 @@ const App = () => {
                 </option>
               ))}
             </select>
+            <button
+              className="buttons btn"
+              onClick={() => {
+                // Call setMaximumTravelTime when the button is clicked
+                const field = document.getElementById('time');
+                setMaximumTravelTime(field.value);
+                console.log("MaximumTravelTime",maximumTravelTime);
+              }}
+            >
+              Set Maximum Travel Time
+            </button>
             {/* Display the excluded places */}
             <div className="excluded-places">
               <p>Excluded Places:</p>
