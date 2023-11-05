@@ -1,5 +1,7 @@
 # GhoomO - Your Ultimate Travel Planner
 
+Demo video : https://drive.google.com/file/d/1v7Moa7UdQXbNjF2P6kKWi9YTpK4BaWsh/view
+
 ## Project Description
 
 **GhoomO** is a web application designed to help tourists make the most of their time exploring a city by providing optimal routes to the best tourist destinations under given time constraints. 
@@ -15,28 +17,13 @@ GhoomO ensures that tourists can optimize their time spent exploring a new city,
 
 ## High-Level Design
 
-### 1. Homepage
-
-The homepage is the initial point of interaction for users and includes:
-
-- An overview about the website with some famous tourist spots cards.
-- Learn more information to redirect to Route Optimization page.
-
-### 2. Route Optimization Page
+### 1. Route Optimization Page
 
 The Route Optimization Page is the heart of the application and provides:
 
-- A search bar to inquire about the desired city.
 - A detailed route for visiting recommended tourist destinations.
 - Step-by-step directions displayed on an interactive map.
 - Customization options for the route, allowing users to include or exclude specific destinations.
-
-### 3. Database and Backend
-
-The application's backend performs several key functions:
-
-- Utilizes the Tom Tom Maps API to calculate distances, optimize routes, and provide real-time directions.
-- Stores information about tourist destinations, including location details, descriptions, and estimated visit times.
 
 ## Benefits
 
