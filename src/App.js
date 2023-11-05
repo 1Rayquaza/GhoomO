@@ -10,10 +10,10 @@ const App = () => {
   const [map, setMap] = useState({})
   const [longitude, setLongitude] = useState(77.2090)//25.430746806545788, 81.76763134699489
   const [latitude, setLatitude] = useState(28.6139)
-  const [maximumTravelTime, setMaximumTravelTime] = useState(10000)
+  const [maximumTravelTime, setMaximumTravelTime] = useState(-1)
   const [excludePlaces, setExcludePlaces] = useState([]);
-  const [globalDestinations, setGlobalDestinations] = useState([]);
-  const [loader, setLoader] = useState(false);
+  // const [globalDestinations, setGlobalDestinations] = useState([]);
+  const [loader, setLoader] = useState(true);
   const [selectedCityIndex, setSelectedCityIndex] = useState(0)
 
   const convertToPoints = (lngLat) => {
@@ -66,11 +66,36 @@ const App = () => {
     if (selectedPlace) {
       const numericPlace = parseInt(selectedPlace, 10); // Parse the selectedPlace as an integer
       console.log("Numeric place excluced:", numericPlace);
+      console.log("place to avoid = ", locations[selectedCityIndex].landmarks[numericPlace]);
       if (!excludePlaces.includes(numericPlace)) {
         setExcludePlaces((prevExcludePlaces) => [...prevExcludePlaces, numericPlace]);
       }
     }
   };
+  // const addMarkerNew = () => {
+  //   const popupOffset = {
+  //     bottom: [0, -25]
+  //   }
+  //   const popup = new tt.Popup({ offset: popupOffset }).setHTML('This is you!')
+  //   const element = document.createElement('div')
+  //   element.className = 'marker'
+
+  //   const marker = new tt.Marker({
+  //     draggable: true,
+  //     element: element,
+  //   })
+  //     .setLngLat([longitude, latitude])
+  //     .addTo(map)
+
+  //   marker.on('dragend', () => {
+  //     const lngLat = marker.getLngLat()
+  //     setLongitude(lngLat.lng)
+  //     setLatitude(lngLat.lat)
+  //   })
+
+  //   marker.setPopup(popup).togglePopup()
+
+  // }
 
 
   useEffect(() => {
@@ -95,7 +120,7 @@ const App = () => {
       // addDeliveryMarker({ lat: 25.452380520210294, lng: 81.8221143278102 }, map, 4);
       recalculateRoutesNew();
     }
-    setGlobalDestinations(destinations);
+    // setGlobalDestinations(destinations);
 
     let map = tt.map({
       key: process.env.REACT_APP_TOM_TOM_API_KEY,
@@ -141,20 +166,20 @@ const App = () => {
       const pointsForDestinations = locations.map((destination) => {
         return convertToPoints(destination);
       });
-      // const callParameters = {
-      //   key: process.env.REACT_APP_TOM_TOM_API_KEY,
-      //   destinations: pointsForDestinations,
-      //   origins: [convertToPoints(currentOrigin)],
-      // };
+      const callParameters = {
+        key: process.env.REACT_APP_TOM_TOM_API_KEY,
+        destinations: pointsForDestinations,
+        origins: [convertToPoints(currentOrigin)],
+      };
 
-      // try {
-      //   const matrixAPIResults = await ttapi.services.matrixRouting(callParameters);
-      //   const results = matrixAPIResults.matrix[0];
-      //   const locationTimes = results.map((result) => result.response.routeSummary.travelTimeInSeconds);
-      //   return locationTimes;
-      // } catch (error) {
-      //   throw new Error('Failed to fetch location times: ' + error.message);
-      // }
+      try {
+        const matrixAPIResults = await ttapi.services.matrixRouting(callParameters);
+        const results = matrixAPIResults.matrix[0];
+        const locationTimes = results.map((result) => result.response.routeSummary.travelTimeInSeconds);
+        return locationTimes;
+      } catch (error) {
+        throw new Error('Failed to fetch location times: ' + error.message);
+      }
     };
 
     const findShortestRoute = (matrix, maxTravelTime) => {
@@ -191,6 +216,12 @@ const App = () => {
     };
 
     const recalculateRoutesNew = async () => {
+      const maxTravelTime = maximumTravelTime;
+      if(maxTravelTime <= 0) {
+        setLoader(false);
+        return;
+      }
+      setLoader(true);
       const newDestination = destinations.slice(); // Copy the destinations array
       newDestination.unshift(origin);
 
@@ -205,7 +236,6 @@ const App = () => {
       }
       console.log(matrix);
 
-      const maxTravelTime = maximumTravelTime;
 
       const validDestinations = findShortestRoute(matrix, maxTravelTime);
       console.log("valid destinations = ", validDestinations);
@@ -238,6 +268,7 @@ const App = () => {
         console.log("old destinations = ", newDestination);
         console.log("new Valid Destinations = ", newValidDestinations);
 
+        setLoader(false);
         ttapi.services
           .calculateRoute({
             key: process.env.REACT_APP_TOM_TOM_API_KEY,
@@ -278,7 +309,7 @@ const App = () => {
       {map && (
         <div className="app">
           <div className='app-title'>
-            Ghoomo - Travelling made simple
+            <b>GhoomO</b> - Travelling made simple
           </div>
           {loader && 
             <div className='loader'>
@@ -286,18 +317,15 @@ const App = () => {
             </div>}
           <div ref={mapElement} className="map" />
           <div className="search-bar">
-          <input
-              type="text"
-              id="time"
-              className="time buttons"
-              placeholder="Available Time"
-            />
-
 
             <select className="buttons" id="selectedCity" onChange={(e) => {
-              setSelectedCityIndex(e.target.value);
-              setLatitude(locations[selectedCityIndex].origin.latitude);
-              setLongitude(locations[selectedCityIndex].origin.longitude);
+              setSelectedCityIndex(parseInt(e.target.value));
+              setLatitude(locations[e.target.value].origin.latitude);
+              setLongitude(locations[e.target.value].origin.longitude);
+              console.log("Selected city is:", e.target.value);
+              console.log("New City coordinates are: ", latitude + " " + longitude);
+              setExcludePlaces([]);
+              // addMarkerNew();
             }}>
               <option value="">Select a City</option>
               {locations.map((place, index) => (
@@ -306,7 +334,17 @@ const App = () => {
                 </option>
               ))}
             </select>
-            <select className="buttons" id="excludePlaces" onChange={handleExcludePlacesChange}>
+            <select className="buttons" id="excludePlaces" onChange={(e) => {
+              const selectedPlace = e.target.value;
+              if (selectedPlace) {
+                const numericPlace = parseInt(selectedPlace, 10) +1; // Parse the selectedPlace as an integer
+                console.log("Numeric place excluced:", numericPlace);
+                console.log("place to avoid = ", locations[selectedCityIndex].landmarks[numericPlace]);
+                if (!excludePlaces.includes(numericPlace)) {
+                  setExcludePlaces((prevExcludePlaces) => [...prevExcludePlaces, numericPlace]);
+                }
+              }
+            }}>
               <option value="">Select a place to exclude</option>
               {locations[selectedCityIndex].landmarks.map((landmark, index) => (
                 <option key={index} value={index}>
@@ -314,23 +352,31 @@ const App = () => {
                 </option>
               ))}
             </select>
+            <input
+              type="text"
+              id="time"
+              className="time buttons"
+              placeholder="Available Time (In hours)"
+            />
             <button
               className="buttons btn"
               onClick={() => {
                 // Call setMaximumTravelTime when the button is clicked
                 const field = document.getElementById('time');
-                setMaximumTravelTime(field.value);
-                console.log("MaximumTravelTime",maximumTravelTime);
+                setMaximumTravelTime(field.value*60*60);
+                console.log("MaximumTravelTime", maximumTravelTime);
               }}
             >
               Set Maximum Travel Time
             </button>
+
+
             {/* Display the excluded places */}
             <div className="excluded-places">
               <p style={{color: 'green'}}><b>Excluded Places</b></p>
               <ol>
                 {excludePlaces.map((place, index) => (
-                  <li key={index}>{locations[selectedCityIndex].landmarks[place].name}</li>
+                  <li key={index}>{locations[selectedCityIndex].landmarks[place-1].name}</li>
                 ))}
               </ol>
             </div>
