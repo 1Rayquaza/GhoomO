@@ -3,11 +3,14 @@ import * as tt from '@tomtom-international/web-sdk-maps'
 import * as ttapi from '@tomtom-international/web-sdk-services'
 import './App.css'
 import '@tomtom-international/web-sdk-maps/dist/maps.css'
+
 import { locations } from './CityData'
+
 
 const App = () => {
   const mapElement = useRef()
   const [map, setMap] = useState({})
+
   const [longitude, setLongitude] = useState(77.2090)//25.430746806545788, 81.76763134699489
   const [latitude, setLatitude] = useState(28.6139)
   const [maximumTravelTime, setMaximumTravelTime] = useState(-1)
@@ -15,6 +18,14 @@ const App = () => {
   // const [globalDestinations, setGlobalDestinations] = useState([]);
   const [loader, setLoader] = useState(true);
   const [selectedCityIndex, setSelectedCityIndex] = useState(0)
+
+  const [longitude, setLongitude] = useState(81.76763134699489)//25.430746806545788, 81.76763134699489
+  const [latitude, setLatitude] = useState(25.430746806545788)
+  const [maximumTravelTime, setMaximumTravelTime] = useState(10000)
+  const [excludePlaces, setExcludePlaces] = useState([]);
+  const [globalDestinations, setGlobalDestinations] = useState([]);
+  const [loader, setLoader] = useState(true);
+
 
   const convertToPoints = (lngLat) => {
     return {
@@ -44,6 +55,7 @@ const App = () => {
     })
   }
 
+
   const addDeliveryMarker = (lngLat, map, landmark) => {
     const element = document.createElement('div')
     element.className = 'marker-delivery'
@@ -52,6 +64,10 @@ const App = () => {
     numberSpan.textContent = landmark;
     numberSpan.className = 'marker-number'; 
     element.appendChild(numberSpan);
+
+  const addDeliveryMarker = (lngLat, map) => {
+    const element = document.createElement('div')
+    element.className = 'marker-delivery'
 
     new tt.Marker({
       element: element
@@ -65,8 +81,10 @@ const App = () => {
     const selectedPlace = e.target.value;
     if (selectedPlace) {
       const numericPlace = parseInt(selectedPlace, 10); // Parse the selectedPlace as an integer
+
       console.log("Numeric place excluced:", numericPlace);
       console.log("place to avoid = ", locations[selectedCityIndex].landmarks[numericPlace]);
+
       if (!excludePlaces.includes(numericPlace)) {
         setExcludePlaces((prevExcludePlaces) => [...prevExcludePlaces, numericPlace]);
       }
@@ -106,6 +124,7 @@ const App = () => {
     const destinations = []
 
     const addCircuit = () => {
+
       locations[selectedCityIndex].landmarks.forEach(landmark => {
         destinations.push({lat: landmark.latitude, lng: landmark.longitude});
         addDeliveryMarker({lat: landmark.latitude, lng: landmark.longitude}, map, landmark.name);
@@ -118,6 +137,18 @@ const App = () => {
       // addDeliveryMarker({ lat: 25.446146398427192, lng: 81.81649870989105 }, map, 3);
       // destinations.push({ lat: 25.452380520210294, lng: 81.8221143278102 });//25.452380520210294, 81.8221143278102
       // addDeliveryMarker({ lat: 25.452380520210294, lng: 81.8221143278102 }, map, 4);
+
+      // destinations.push({ lat: 25.473034, lng: 81.878357 });
+      // addDeliveryMarker({ lat: 25.473034, lng: 81.878357 }, map);
+      destinations.push({ lat: 25.427828490262055, lng: 81.77325935100428 });//25.427828490262055, 81.77325935100428
+      addDeliveryMarker({ lat: 25.427828490262055, lng: 81.77325935100428 }, map);
+      destinations.push({ lat: 25.44492439818056, lng: 81.82023375153176 });//25.44492439818056, 81.82023375153176
+      addDeliveryMarker({ lat: 25.44492439818056, lng: 81.82023375153176 }, map);
+      destinations.push({ lat: 25.446146398427192, lng: 81.81649870989105 });//25.446146398427192, 81.81649870989105
+      addDeliveryMarker({ lat: 25.446146398427192, lng: 81.81649870989105 }, map);
+      destinations.push({ lat: 25.452380520210294, lng: 81.8221143278102 });//25.452380520210294, 81.8221143278102
+      addDeliveryMarker({ lat: 25.452380520210294, lng: 81.8221143278102 }, map);
+
       recalculateRoutesNew();
     }
     // setGlobalDestinations(destinations);
@@ -172,6 +203,29 @@ const App = () => {
         origins: [convertToPoints(currentOrigin)],
       };
 
+
+      // const callParameters = {
+      //   key: process.env.REACT_APP_TOM_TOM_API_KEY,
+      //   destinations: pointsForDestinations,
+      //   origins: [convertToPoints(currentOrigin)],
+      // };
+
+      // try {
+      //   const matrixAPIResults = await ttapi.services.matrixRouting(callParameters);
+      //   const results = matrixAPIResults.matrix[0];
+      //   const locationTimes = results.map((result) => result.response.routeSummary.travelTimeInSeconds);
+      //   return locationTimes;
+      // } catch (error) {
+      //   throw new Error('Failed to fetch location times: ' + error.message);
+      // }
+
+      const callParameters = {
+        key: process.env.REACT_APP_TOM_TOM_API_KEY,
+        destinations: pointsForDestinations,
+        origins: [convertToPoints(currentOrigin)],
+      };
+
+
       try {
         const matrixAPIResults = await ttapi.services.matrixRouting(callParameters);
         const results = matrixAPIResults.matrix[0];
@@ -180,6 +234,7 @@ const App = () => {
       } catch (error) {
         throw new Error('Failed to fetch location times: ' + error.message);
       }
+
     };
 
     const findShortestRoute = (matrix, maxTravelTime) => {
@@ -291,7 +346,11 @@ const App = () => {
 
     map.on('click', (e) => {
       destinations.push(e.lngLat)
+
       addDeliveryMarker(e.lngLat, map, 5)
+
+      addDeliveryMarker(e.lngLat, map)
+
       recalculateRoutesNew()
     })
 
@@ -308,15 +367,18 @@ const App = () => {
     <>
       {map && (
         <div className="app">
+
           <div className='app-title'>
             <b>GhoomO</b> - Travelling made simple
           </div>
+
           {loader && 
             <div className='loader'>
               <img src="https://i.gifer.com/ZKZg.gif" alt="Loading..." width="50" height="50"></img>
             </div>}
           <div ref={mapElement} className="map" />
           <div className="search-bar">
+
 
             <select className="buttons" id="selectedCity" onChange={(e) => {
               setSelectedCityIndex(parseInt(e.target.value));
@@ -349,6 +411,13 @@ const App = () => {
               {locations[selectedCityIndex].landmarks.map((landmark, index) => (
                 <option key={index} value={index}>
                   {landmark.name}
+
+            <select className="buttons" id="excludePlaces" onChange={handleExcludePlacesChange}>
+              <option value="">Select a place to exclude</option>
+              {globalDestinations.map((place, index) => (
+                <option key={index} value={index + 1}>
+                  {index + 1}
+
                 </option>
               ))}
             </select>
@@ -373,12 +442,21 @@ const App = () => {
 
             {/* Display the excluded places */}
             <div className="excluded-places">
+
               <p style={{color: 'green'}}><b>Excluded Places</b></p>
               <ol>
                 {excludePlaces.map((place, index) => (
                   <li key={index}>{locations[selectedCityIndex].landmarks[place-1].name}</li>
                 ))}
               </ol>
+
+              <p>Excluded Places:</p>
+              <ul>
+                {excludePlaces.map((place, index) => (
+                  <li key={index}>{place}</li>
+                ))}
+              </ul>
+
             </div>
           </div>
         </div>

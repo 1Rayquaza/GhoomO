@@ -1,0 +1,78 @@
+body {
+    font-family: Monsterrat;
+    margin: 0;
+    padding: 0;
+    background-image: url('./images/map.jpeg'); 
+    background-size: cover; 
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    /* opacity: 0.5; */
+    /* background-color: rgba(255, 255, 255, 1); */
+  
+  }
+  
+  .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start; 
+    height: 100vh;
+    background-color: transparent; 
+  }
+  
+  .header {
+    background-color: #9381A8;
+    padding: 20px;
+    text-align: center;
+    width: 100%;
+    color: #fff;
+  }
+  
+  .card-container {
+    display: flex;
+    justify-content: space-between; 
+    align-items: center;
+    flex-wrap: wrap; 
+    gap: 30px; 
+    margin-top: 20px;
+  }
+  
+  .card {
+    background-blend-mode: overlay; 
+    border: 1px solid #ddd;
+    border-radius: 15px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    text-align: center;
+    width: 400px;
+    min-height: 550px;
+    background-image: url('./images/darjeeling.jpg'); 
+    background-size: cover; 
+    background-repeat: no-repeat;
+  }
+  
+  .card:nth-child(2) {
+    background-image: url('./images/tajmahal.jpg'); 
+  }
+  
+  .card:nth-child(3) {
+    background-image: url('./images/kashmir.jpg'); 
+  }
+  
+  .button-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    gap: 30px;
+  }
+  
+  .button-container button {
+    background-color: #9381A8;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 20px 40px; 
+    font-size: 18px; 
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
