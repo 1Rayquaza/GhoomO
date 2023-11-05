@@ -1,70 +1,55 @@
-# Getting Started with Create React App
+# GhoomO - Your Ultimate Travel Planner
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Project Description
 
-## Available Scripts
+**GhoomO** is a web application designed to help tourists make the most of their time exploring a city by providing optimal routes to the best tourist destinations under given time constraints. 
 
-In the project directory, you can run:
+**How It Works:**
 
-### `npm start`
+- Users enter the name of the city they wish to visit and the time they have available, along with their starting location.
+- Upon user input, GhoomO's backend utilizes the TomTom Maps API to access distance data for all tourist sites stored in our database.
+- The system then generates and presents the most efficient route for visiting these places within the given timeframe. 
+- Users can further customize the route by including or excluding specific destinations.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+GhoomO ensures that tourists can optimize their time spent exploring a new city, making their visit enjoyable and stress-free.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## High-Level Design
 
-### `npm test`
+### 1. Homepage
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+The homepage is the initial point of interaction for users and includes:
 
-### `npm run build`
+- An overview about the website with some famous tourist spots cards.
+- Learn more information to redirect to Route Optimization page.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### 2. Route Optimization Page
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+The Route Optimization Page is the heart of the application and provides:
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- A search bar to inquire about the desired city.
+- A detailed route for visiting recommended tourist destinations.
+- Step-by-step directions displayed on an interactive map.
+- Customization options for the route, allowing users to include or exclude specific destinations.
 
-### `npm run eject`
+### 3. Database and Backend
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+The application's backend performs several key functions:
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+- Utilizes the Tom Tom Maps API to calculate distances, optimize routes, and provide real-time directions.
+- Stores information about tourist destinations, including location details, descriptions, and estimated visit times.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## Benefits
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+GhoomO offers numerous benefits for travelers, including:
 
-## Learn More
+- Time optimization, helping users make the most of their limited time.
+- Customization of routes to suit individual preferences.
+- Improved efficiency, enabling visitors to cover more ground with less effort.
+- Reduced stress by providing clear directions and eliminating uncertainty.
+- Enhanced tourism experiences through well-planned itineraries.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### Tech Stack: React.js
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+---
 
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+GhoomO is your travel companion, helping you explore new cities efficiently and with ease. Enjoy your trips like never before! So let's GhoomOooo...
